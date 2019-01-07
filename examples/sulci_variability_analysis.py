@@ -7,6 +7,7 @@ import nibabel
 import matplotlib.style
 matplotlib.style.use('ggplot')
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 # import seaborn as sns
 
 subjects = pd.DataFrame({
@@ -264,36 +265,87 @@ for hemisphere in ('L', 'R'):
 primary_sulci = {'Central_sulcus', 'Callosal_sulcus'}
 secondary_sulci = {'Paracingulate_sulcus', 'Angular_sulcus'}
 
-fig = plt.figure(figsize=(10, 20))
-ax = fig.add_subplot(111)
-data_and_labels = [
-    (s['L_probability_map'][s['L_probability_map'] > 1 / 6], s['sulcus'])
-    for s in statistics
-    if (
-        s['hemisphere'] == 'L' and
-        s['gender'] == 'ALL' and
-        s['L_probability_map'] is not None and
-        s['L_count'] >= 6
-        # and
-        # s['sulcus'] in primary_sulci | secondary_sulci
-    )
-]
-data_and_labels = sorted(
-    data_and_labels,
-    key=lambda x: x[0][x[0].nonzero()].mean()
-)
-dataset, labels = zip(*data_and_labels)
-cleaned_labels = [l.split('_sulcus')[0].replace('_', ' ') for l in labels]
-pos = range(1, len(labels) + 1)
-vp = ax.violinplot(dataset, pos, vert=False, showmeans=True,
-                   showextrema=False)
-vp['cmeans'].set_color('black')
-for i in range(len(vp['bodies'])):
-    vp['bodies'][i].set_facecolor('red')
-    vp['bodies'][i].set_alpha(dataset[i].mean())
-ax.set_yticks(pos)
-ax.set_yticklabels(cleaned_labels)
-ax.set_title('Left hemisphere per-sulcus probability map violin plot')
-fig.subplots_adjust(left=0.25)
-fig.savefig('/tmp/left_hemisphere_per_sulcus_probability_map_violin_plot.pdf')
 
+
+def violin_plot_sulci_probmap(ax, i, j, color, dataset, labels, h, cfg):
+    cleaned_labels = [l.split('_sulcus')[0].replace('_', ' ') for l in labels]
+    pos = range(1, len(labels) + 1)
+    vp = ax.violinplot(dataset, pos, vert=False,
+                       showmeans=True, showextrema=False)
+    vp['cmeans'].set_color('black')
+    if i == 0:
+        ax.tick_params(labelbottom=False)
+    for i in range(len(vp['bodies'])):
+        vp['bodies'][i].set_facecolor(color)
+        vp['bodies'][i].set_alpha(dataset[i].mean())
+        if cfg['ordering'] == 'top':
+            value = (
+                dataset[i][dataset[i] > 0.99].size /
+                dataset[i][dataset[i].nonzero()].size
+            )
+            ax.text(1.0, i + 1, '{:.3f}'.format(value))
+        else:
+            ax.text(
+                dataset[i].mean() + 0.01, i + 1,
+                '{:.3f}'.format(dataset[i].mean())
+            )
+    ax.set_yticks(pos)
+    ax.set_yticklabels(cleaned_labels)
+    if j == 1:
+        ax.yaxis.tick_right()
+
+plot_configs = [
+    {'min_count': 6, 'ordering': 'top'},
+    {'min_count': 2, 'ordering': 'bottom'},
+]
+
+fig = plt.figure(figsize=(20, 20))
+gs = gridspec.GridSpec(2, 2)
+
+axes = dict()
+
+for i, cfg in enumerate(plot_configs):
+    for j, h in enumerate(['L', 'R']):
+
+        if i == 1:
+            ax = fig.add_subplot(gs[i, j], sharex=axes[(0, j)])
+        else:
+            ax = fig.add_subplot(gs[i, j])
+        axes[(i, j)] = ax
+
+        data_and_labels = [
+            (s[f'{h}_probability_map'][s[f'{h}_probability_map'] > 1 / 6],
+             s['sulcus'])
+            for s in statistics
+            if (
+                s['hemisphere'] == h and
+                s['gender'] == 'ALL' and
+                s[f'{h}_probability_map'] is not None and
+                s[f'{h}_count'] >= cfg['min_count'] and
+                s['sulcus'] in {'Parieto_occipital_sulcus'}
+            )
+        ]
+        if cfg['ordering'] == 'top':
+            data_and_labels = sorted(
+                data_and_labels,
+                key=lambda x: x[0][x[0] > 0.99].shape[0] / x[0].shape[0]
+            )
+        else:
+            data_and_labels = sorted(
+                data_and_labels,
+                key=lambda x: x[0][x[0] > 1/6].mean()
+            )
+        dataset, labels = zip(*data_and_labels)
+        # if cfg['ordering'] == 'top':
+            # dataset = dataset[-10:]
+            # labels = labels[-10:]
+        # else:
+            # dataset = dataset[:10]
+            # labels = labels[:10]
+        color = 'red' if h == 'L' else 'blue'
+        violin_plot_sulci_probmap(
+            ax, i, j, color, dataset, labels, h, cfg
+        )
+# fig.subplots_adjust(left=0.35, right=0.35, wspace=0.05)
+plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+fig.savefig('/tmp/figure.pdf')
