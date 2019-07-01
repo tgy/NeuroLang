@@ -395,7 +395,7 @@ for subject_id in subject_ids:
         longitudinal = fe.add_region_set(set(), name='longitudinal')
         for sulcus_name in {
             'Central_sulcus',
-            'lateral_fissure',
+            'Lateral_fissure',
             'Parieto_occipital_sulcus',
             'Callosal_sulcus',
             'Calcarine_sulcus',
