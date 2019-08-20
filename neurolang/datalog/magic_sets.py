@@ -5,7 +5,7 @@ Magic Sets [1] rewriting implementation for Datalog.
 '''
 
 
-from .solver_datalog_naive import (
+from .naive_solver import (
     Implication, Symbol,
     ExpressionBlock, Constant,
     extract_datalog_predicates,

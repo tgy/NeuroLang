@@ -1,12 +1,12 @@
 import pytest
 
 from .. import expressions
-from .. import solver_datalog_naive as sdb
-from .. import solver_datalog_extensional_db
+from ..datalog import naive_solver as sdb
+from ..datalog import extensional_db_solver
 from .. import expression_walker as ew
-from ..solver_datalog_naive import (Implication, Fact)
-from ..existential_datalog import ExistentialDatalog
-from ..warded_datalog import (
+from ..datalog.naive_solver import (Implication, Fact)
+from ..datalog.existential import ExistentialDatalog
+from ..datalog.warded import (
     WardedDatalogDangerousVariableExtraction,
     WardedDatalogDangerousVariableCheck,
     NeuroLangNonWardedException,

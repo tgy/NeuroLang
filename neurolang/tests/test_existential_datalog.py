@@ -1,14 +1,14 @@
 import pytest
 
-from .. import solver_datalog_extensional_db
+from ..datalog import extensional_db_solver
 from .. import expression_walker
 from .. import expressions
 from ..exceptions import NeuroLangException
 from ..expressions import ExpressionBlock, Query
-from ..existential_datalog import (
+from ..datalog.existential import (
     ExistentialDatalog, SolverNonRecursiveExistentialDatalog, Implication
 )
-from ..solver_datalog_naive import Fact, UNDEFINED, NULL
+from ..datalog.naive_solver import Fact, UNDEFINED, NULL
 
 C_ = expressions.Constant
 S_ = expressions.Symbol
@@ -18,7 +18,7 @@ EP_ = expressions.ExistentialPredicate
 
 class SolverWithoutExistentialResolution(
     ExistentialDatalog,
-    solver_datalog_extensional_db.ExtensionalDatabaseSolver,
+    extensional_db_solver.ExtensionalDatabaseSolver,
     expression_walker.ExpressionBasicEvaluator,
 ):
     pass
@@ -26,7 +26,7 @@ class SolverWithoutExistentialResolution(
 
 class SolverWithExistentialResolution(
     SolverNonRecursiveExistentialDatalog,
-    solver_datalog_extensional_db.ExtensionalDatabaseSolver,
+    extensional_db_solver.ExtensionalDatabaseSolver,
     expression_walker.ExpressionBasicEvaluator,
 ):
     pass

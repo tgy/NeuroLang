@@ -1,10 +1,9 @@
 import pytest
-
 from typing import AbstractSet
 
-from .. import solver_datalog_naive as sdb
-from .. import solver_datalog_extensional_db
-from ..solver_datalog_naive import NULL
+from ..datalog import naive_solver as sdb
+from ..datalog import extensional_db_solver
+from ..datalog.naive_solver import NULL
 from .. import expression_walker
 from ..expressions import (
     Symbol, Constant, FunctionApplication, Lambda, ExpressionBlock,
@@ -25,7 +24,7 @@ T_ = sdb.Fact
 
 class Datalog(
     sdb.SolverNonRecursiveDatalogNaive,
-    solver_datalog_extensional_db.ExtensionalDatabaseSolver,
+    extensional_db_solver.ExtensionalDatabaseSolver,
     expression_walker.ExpressionBasicEvaluator
 ):
     pass

@@ -3,9 +3,9 @@ from itertools import chain
 from operator import eq
 from typing import AbstractSet
 
-from .expressions import Constant, Symbol, FunctionApplication
-from . import solver_datalog_naive as sdb
-from .unification import (
+from ..expressions import Constant, Symbol, FunctionApplication
+from .naive_solver import extract_datalog_predicates
+from ..unification import (
     apply_substitution,
     apply_substitution_arguments,
     compose_substitutions,
@@ -160,7 +160,7 @@ def extract_rule_predicates(
         restriction_instance = dict()
 
     head_functor = rule.consequent.functor
-    rule_predicates = sdb.extract_datalog_predicates(rule.antecedent)
+    rule_predicates = extract_datalog_predicates(rule.antecedent)
     restricted_predicates = []
     nonrestricted_predicates = []
     builtin_predicates = []

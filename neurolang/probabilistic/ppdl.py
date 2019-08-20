@@ -9,8 +9,8 @@ from ..expressions import (
 )
 from ..expression_walker import ExpressionBasicEvaluator
 from ..expression_pattern_matching import add_match
-from ..existential_datalog import Implication
-from ..solver_datalog_naive import DatalogBasic, is_conjunctive_expression
+from ..datalog.existential import Implication
+from ..datalog.naive_solver import DatalogBasic, is_conjunctive_expression
 
 
 def is_conjunction(expression):

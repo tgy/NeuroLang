@@ -1,11 +1,11 @@
 import pytest
 
-from .. import solver_datalog_extensional_db
+from ..datalog import extensional_db_solver
 from .. import expression_walker
 from ..expression_walker import ExpressionBasicEvaluator
 from ..exceptions import NeuroLangException
 from ..expressions import ExpressionBlock, Constant, Symbol, Query
-from ..existential_datalog import (
+from ..datalog.existential import (
     Implication, SolverNonRecursiveExistentialDatalog
 )
 from ..probabilistic.ppdl import (
@@ -13,7 +13,7 @@ from ..probabilistic.ppdl import (
     TranslateGDatalogToEDatalog, DeltaTerm, get_dterm,
     can_lead_to_object_uncertainty
 )
-from ..solver_datalog_naive import Fact
+from ..datalog.naive_solver import Fact
 from ..unification import most_general_unifier, apply_substitution
 
 C_ = Constant
@@ -41,7 +41,7 @@ class GenerativeDatalogTest(GenerativeDatalog, ExpressionBasicEvaluator):
 
 
 class GenerativeDatalogTestSolver(
-    solver_datalog_extensional_db.ExtensionalDatabaseSolver,
+    extensional_db_solver.ExtensionalDatabaseSolver,
     SolverNonRecursiveExistentialDatalog, ExpressionBasicEvaluator
 ):
     pass

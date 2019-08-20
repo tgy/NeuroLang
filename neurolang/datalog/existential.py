@@ -1,14 +1,14 @@
-from .expressions import (
+from ..expressions import (
     NeuroLangException, ExistentialPredicate, Symbol, Constant,
     ExpressionBlock, FunctionApplication, Lambda
 )
-from .solver_datalog_naive import (
+from .naive_solver import (
     SolverNonRecursiveDatalogNaive,
     DatalogBasic,
     Implication,
 )
 
-from .expression_pattern_matching import add_match
+from ..expression_pattern_matching import add_match
 
 __all__ = [
     'Implication',

@@ -4,8 +4,8 @@ from uuid import uuid1
 import numpy as np
 
 from .. import neurolang as nl
-from .. import solver_datalog_naive as sdb
-from ..datalog_chase import build_chase_solution
+from ..datalog import naive_solver as sdb
+from ..datalog.chase import build_chase_solution
 from ..expressions import is_leq_informative, Unknown
 from ..region_solver import Region
 from ..regions import (

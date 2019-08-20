@@ -1,14 +1,12 @@
-from .expressions import (
+from ..expressions import (
     Symbol, Constant, ExpressionBlock, FunctionApplication,
     ExistentialPredicate
 )
-from .expression_walker import (
-    PatternWalker, add_match, expression_iterator
-)
-from .solver_datalog_naive import (Implication, Fact)
+from ..expression_walker import PatternWalker, add_match, expression_iterator
+from .naive_solver import Implication, Fact
 
-from .exceptions import NeuroLangException
-from .utils.orderedset import OrderedSet
+from ..exceptions import NeuroLangException
+from ..utils.orderedset import OrderedSet
 
 
 class NeuroLangNonWardedException(NeuroLangException):
@@ -161,9 +159,7 @@ class WardedDatalogDangerousVariableCheck(PatternWalker):
         var = dangerous_symbol.pop()
         dangerous_pos = self.can_be_dangerous[var].pop()
 
-        dangerous_vars = self.get_name(
-            expression.consequent, dangerous_pos
-        )
+        dangerous_vars = self.get_name(expression.consequent, dangerous_pos)
 
         return dangerous_vars
 

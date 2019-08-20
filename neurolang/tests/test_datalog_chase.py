@@ -2,21 +2,21 @@ import operator as op
 from typing import Callable
 
 from .. import expressions
-from .. import solver_datalog_naive as sdb
-from .. import expression_walker as ew
-from .. import datalog_chase as dc
+from ..expressions import Constant, Symbol, ExpressionBlock, Unknown
+from ..datalog.naive_solver import Implication, Fact, DatalogBasic
+from ..expression_walker import ExpressionBasicEvaluator
+from ..datalog import chase as dc
 
-
-C_ = expressions.Constant
-S_ = expressions.Symbol
-Imp_ = sdb.Implication
-Fact_ = sdb.Fact
-Eb_ = expressions.ExpressionBlock
+C_ = Constant
+S_ = Symbol
+Imp_ = Implication
+Fact_ = Fact
+Eb_ = ExpressionBlock
 
 
 class Datalog(
-    sdb.DatalogBasic,
-    ew.ExpressionBasicEvaluator
+    DatalogBasic,
+    ExpressionBasicEvaluator
 ):
     def function_gt(self, x: int, y: int)->bool:
         return x > y
@@ -25,7 +25,7 @@ class Datalog(
 def test_builtin_equality_only():
     Q = S_('Q')
     x = S_('x')
-    eq = C_[Callable[[expressions.Unknown, expressions.Unknown], bool]](op.eq)
+    eq = C_[Callable[[Unknown, Unknown], bool]](op.eq)
 
     datalog_program = Eb_((
         Imp_(Q(x), eq(x, C_(5) + C_(7))),
@@ -47,7 +47,7 @@ def test_builtin_equality_only():
 def test_python_builtin_equaltiy_chase_step():
     Q = S_('Q')
     S = S_('S')
-    eq = C_[Callable[[expressions.Unknown, expressions.Unknown], bool]](op.eq)
+    eq = C_[Callable[[Unknown, Unknown], bool]](op.eq)
     x = S_('x')
     y = S_('y')
     z = S_('z')
@@ -80,7 +80,7 @@ def test_python_builtin_chase_step():
     Q = S_('Q')
     T = S_('T')
     S = S_('S')
-    gt = C_[Callable[[expressions.Unknown, expressions.Unknown], bool]](op.gt)
+    gt = C_[Callable[[Unknown, Unknown], bool]](op.gt)
     x = S_('x')
     y = S_('y')
     z = S_('z')
@@ -118,7 +118,7 @@ def test_python_builtin_chase_step():
 def test_python_nested_builtin_chase_step():
     Q = S_('Q')
     S = S_('S')
-    gt = C_[Callable[[expressions.Unknown, expressions.Unknown], bool]](op.gt)
+    gt = C_[Callable[[Unknown, Unknown], bool]](op.gt)
     x = S_('x')
     y = S_('y')
 
@@ -182,7 +182,7 @@ def test_non_recursive_predicate_chase_step():
 def test_python_multiple_builtins():
     Q = S_('Q')
     S = S_('S')
-    eq = C_[Callable[[expressions.Unknown, expressions.Unknown], bool]](op.eq)
+    eq = C_[Callable[[Unknown, Unknown], bool]](op.eq)
     w = S_('w')
     x = S_('x')
     y = S_('y')

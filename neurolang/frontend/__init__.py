@@ -3,12 +3,12 @@ from ..expression_walker import (
     add_match, Symbol, FunctionApplication, Constant
 )
 from ..solver import FirstOrderLogicSolver
-from ..solver_datalog_extensional_db import ExtensionalDatabaseSolver
+from ..datalog.extensional_db_solver import ExtensionalDatabaseSolver
 from ..region_solver import RegionSolver
 from ..regions import ExplicitVBR
 from ..utils.data_manipulation import parse_region_label_map
 from .. import neurolang as nl
-from ..solver_datalog_naive import DatalogBasic
+from ..datalog.naive_solver import DatalogBasic
 from ..expression_walker import ExpressionBasicEvaluator
 
 from typing import Any, AbstractSet, Callable

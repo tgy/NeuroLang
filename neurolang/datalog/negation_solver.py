@@ -1,14 +1,14 @@
 from typing import AbstractSet, Tuple, Callable
 from operator import and_, invert
 
-from .type_system import Unknown
-from .expression_walker import add_match, expression_iterator
-from .solver_datalog_naive import (
+from ..type_system import Unknown
+from ..expression_walker import add_match, expression_iterator
+from .naive_solver import (
     DatalogBasic,
     Implication,
     extract_datalog_free_variables,
 )
-from .expressions import (
+from ..expressions import (
     Symbol, NonConstant, FunctionApplication, NeuroLangException,
     is_leq_informative, ExpressionBlock, Constant
 )

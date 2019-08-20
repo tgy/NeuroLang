@@ -6,16 +6,15 @@ from typing import AbstractSet, Any, Tuple, Callable
 from itertools import product
 from operator import and_, or_, invert, xor
 
-from .utils import OrderedSet
-
-from .expressions import (
+from ..utils import OrderedSet
+from ..expressions import (
     FunctionApplication, Constant, NeuroLangException, is_leq_informative,
     Symbol, Lambda, ExpressionBlock, Expression, Definition,
     Query, ExistentialPredicate, Quantifier,
 )
 
-from .type_system import Unknown
-from .expression_walker import (
+from ..type_system import Unknown
+from ..expression_walker import (
     add_match, PatternWalker, expression_iterator,
 )
 

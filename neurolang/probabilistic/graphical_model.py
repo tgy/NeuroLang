@@ -8,7 +8,7 @@ from ..expressions import (
     Expression, NeuroLangException, FunctionApplication, Constant, Symbol,
     Definition, ExpressionBlock
 )
-from ..solver_datalog_naive import Implication, Fact
+from ..datalog.naive_solver import Implication, Fact
 from ..expression_walker import ExpressionWalker
 from ..expression_pattern_matching import add_match
 from .. import unification

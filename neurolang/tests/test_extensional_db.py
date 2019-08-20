@@ -4,7 +4,7 @@ from operator import contains
 
 import pytest
 
-from .. import solver_datalog_extensional_db as sdb
+from ..datalog import extensional_db_solver as sdb
 from .. import solver
 from .. import expressions
 from ..expressions import NeuroLangTypeException
