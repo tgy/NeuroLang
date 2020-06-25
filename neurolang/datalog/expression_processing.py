@@ -408,7 +408,8 @@ def enforce_conjunction(expression):
     )
 
 
-def get_rule_for_predicate(predicate, idb):
+def get_rule_for_predicate(predicate, program):
+    idb = program.intensional_database()
     if predicate.functor not in idb:
         return None
     expression = idb[predicate.functor]
@@ -479,12 +480,11 @@ def flatten_query(query, program):
         raise UnsupportedProgramError(
             "Only program with an intensional database are supported"
         )
-    idb = program.intensional_database()
     query = enforce_conjunction(query)
     conj_query = Conjunction(tuple())
     substitutions = dict()
     for predicate in query.formulas:
-        rule = get_rule_for_predicate(predicate, idb)
+        rule = get_rule_for_predicate(predicate, program)
         if rule is None:
             formula = predicate
         else:
