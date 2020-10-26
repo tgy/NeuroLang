@@ -689,6 +689,27 @@ def test_repeated_variable_probabilistic_rule(solver):
 
 
 def test_program_with_selfjoined_pchoice(solver):
+    """
+    We define a rule
+
+        Q(x, y, PROB(x, y))  :-  P(x), P(y)
+
+    where P is a probabilistic choice predicate symbol defined by
+
+        P(a) : 0.2  v  P(b) : 0.8  :-  T
+
+    Then we solve the query
+
+        ans(x, y, p)  :-  Q(x, y, p)
+
+    expecting the resulting set to be
+
+        x  | y  | p
+        ---|----|----
+        a  | a  | 0.2
+        b  | b  | 0.8
+
+    """
     if solver != dichotomy_theorem_based_solver:
         return
     cpl = CPLogicProgram()
