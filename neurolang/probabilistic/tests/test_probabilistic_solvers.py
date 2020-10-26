@@ -673,7 +673,6 @@ def test_program_with_variable_equality(solver):
     assert testing.eq_prov_relations(result, expected)
 
 
-<<<<<<< HEAD
 def test_repeated_variable_probabilistic_rule(solver):
     cpl = CPLogicProgram()
     cpl.add_probabilistic_facts_from_tuples(
@@ -687,7 +686,8 @@ def test_repeated_variable_probabilistic_rule(solver):
     result = solver.solve_succ_query(query, cpl)
     expected = {(0.2, 7, 7)}
     assert result == expected
-=======
+
+
 def test_program_with_selfjoined_pchoice(solver):
     if solver != dichotomy_theorem_based_solver:
         return
@@ -702,4 +702,3 @@ def test_program_with_selfjoined_pchoice(solver):
     result = solver.solve_succ_query(
         Implication(ans(x, y, p), Q(x, y, p)), cpl
     )
->>>>>>> 80f56d4b (add test)
