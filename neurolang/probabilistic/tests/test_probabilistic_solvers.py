@@ -14,7 +14,6 @@ from ..exceptions import (
     NotEasilyShatterableError,
     NotHierarchicalQueryException,
 )
-from ..expressions import PROB, ProbabilisticQuery
 
 try:
     from contextlib import nullcontext
@@ -714,12 +713,13 @@ def test_program_with_selfjoined_pchoice(solver):
         return
     cpl = CPLogicProgram()
     cpl.add_probabilistic_choice_from_tuples(P, {(0.2, "a"), (0.8, "b")})
-    cpl.walk(
-        Implication(
-            Q(x, y, ProbabilisticQuery(PROB, (x, y))),
-            Conjunction((P(x), P(y))),
-        )
+    cpl.walk(Implication(Q(x, y), Conjunction((P(x), P(y)))))
+    result = solver.solve_succ_query(Implication(ans(x, y), Q(x, y)), cpl)
+    expected = testing.make_prov_set(
+        [
+            (0.2, "a", "a"),
+            (0.8, "b", "b"),
+        ],
+        ("_p_", "x", "y"),
     )
-    result = solver.solve_succ_query(
-        Implication(ans(x, y, p), Q(x, y, p)), cpl
-    )
+    assert testing.eq_prov_relations(result, expected)
