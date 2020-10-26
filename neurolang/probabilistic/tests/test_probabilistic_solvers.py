@@ -14,7 +14,7 @@ from ..exceptions import (
     NotEasilyShatterableError,
     NotHierarchicalQueryException,
 )
-from ..expressions import ProbabilisticQuery, PROB
+from ..expressions import PROB, ProbabilisticQuery
 
 try:
     from contextlib import nullcontext
@@ -673,6 +673,7 @@ def test_program_with_variable_equality(solver):
     assert testing.eq_prov_relations(result, expected)
 
 
+<<<<<<< HEAD
 def test_repeated_variable_probabilistic_rule(solver):
     cpl = CPLogicProgram()
     cpl.add_probabilistic_facts_from_tuples(
@@ -686,3 +687,19 @@ def test_repeated_variable_probabilistic_rule(solver):
     result = solver.solve_succ_query(query, cpl)
     expected = {(0.2, 7, 7)}
     assert result == expected
+=======
+def test_program_with_selfjoined_pchoice(solver):
+    if solver != dichotomy_theorem_based_solver:
+        return
+    cpl = CPLogicProgram()
+    cpl.add_probabilistic_choice_from_tuples(P, {(0.2, "a"), (0.8, "b")})
+    cpl.walk(
+        Implication(
+            Q(x, y, ProbabilisticQuery(PROB, (x, y))),
+            Conjunction((P(x), P(y))),
+        )
+    )
+    result = solver.solve_succ_query(
+        Implication(ans(x, y, p), Q(x, y, p)), cpl
+    )
+>>>>>>> 80f56d4b (add test)
