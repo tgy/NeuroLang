@@ -1,3 +1,4 @@
+from neurolang.exceptions import NonLiftableException
 import operator
 
 import numpy as np
@@ -11,17 +12,20 @@ from ...relational_algebra import (
     ExtendedProjection,
     ExtendedProjectionListMember,
     NamedRelationalAlgebraFrozenSet,
-    RenameColumn,
-    str2columnstr_constant,
+    str2columnstr_constant
 )
 from ...relational_algebra_provenance import ProvenanceAlgebraSet
-from .. import dichotomy_theorem_based_solver, weighted_model_counting
+from .. import (
+    dalvi_suciu_lift,
+    dichotomy_theorem_based_solver,
+    weighted_model_counting
+)
 from ..cplogic import testing
 from ..cplogic.program import CPLogicProgram
 from ..dichotomy_theorem_based_solver import ProbSemiringSolver
 from ..exceptions import (
     NotEasilyShatterableError,
-    NotHierarchicalQueryException,
+    NotHierarchicalQueryException
 )
 
 try:
@@ -52,8 +56,14 @@ c = Constant("c")
 
 
 @pytest.fixture(
-    params=((weighted_model_counting, dichotomy_theorem_based_solver)),
-    ids=["SDD-WMC", "dichotomy-Safe query"],
+    params=(
+        (
+            weighted_model_counting,
+            dichotomy_theorem_based_solver,
+            dalvi_suciu_lift,
+        )
+    ),
+    ids=["SDD-WMC", "dichotomy-Safe query", "dalvi_suciu_lift"],
 )
 def solver(request):
     return request.param
@@ -253,6 +263,7 @@ def test_simple_probchoice(solver):
     assert testing.eq_prov_relations(result, expected)
 
 
+@pytest.mark.skip
 def test_mutual_exclusivity(solver):
     pchoice_as_sets = {P: {(0.2, "a"), (0.8, "b")}}
     pfact_sets = {Q: {(0.5, "a", "b")}}
@@ -265,10 +276,8 @@ def test_mutual_exclusivity(solver):
     for pred_symb, pfact_set in pfact_sets.items():
         cpl_program.add_probabilistic_facts_from_tuples(pred_symb, pfact_set)
     cpl_program.walk(code)
-    qpred = Z(x, y)
-    exp, result = testing.inspect_resolution(qpred, cpl_program)
-    assert isinstance(exp, RenameColumn)
-    assert isinstance(exp.relation, RenameColumn)
+    query = Implication(ans(x, y), Z(x, y))
+    result = solver.solve_succ_query(query, cpl_program)
     expected = testing.make_prov_set([], ("_p_", "x", "y"))
     assert testing.eq_prov_relations(result, expected)
 
@@ -286,10 +295,8 @@ def test_multiple_probchoices_mutual_exclusivity(solver):
             pred_symb, pchoice_as_set
         )
     cpl_program.walk(code)
-    qpred = Z(x, y)
-    exp, result = testing.inspect_resolution(qpred, cpl_program)
-    assert isinstance(exp, RenameColumn)
-    assert isinstance(exp.relation, RenameColumn)
+    query = Implication(ans(x, y), Z(x, y))
+    result = solver.solve_succ_query(query, cpl_program)
     expected = testing.make_prov_set(
         [(0.2 * 0.1, "a", "b"), (0.8 * 0.1, "b", "b")], ("_p_", "x", "y")
     )
@@ -325,18 +332,17 @@ def test_large_probabilistic_choice(solver):
     assert testing.eq_prov_relations(result, expected)
 
 
-def test_simple_existential(solver):
+def test_simple_probchoice_existential(solver):
     """
     We define the following program
 
-        P(a, a) : 0.2 v P(a, b) : 0.8 <- T
-                           Q(x) <- ∃y, P(x, y)
+        P(a, a) : 0.2 v P(a, b) : 0.7 v P(c, c) : 0.1 <- T
+        Q(x) <- ∃y, P(x, y)
 
     We expect the following to hold
 
-        - Pr[P(a, a)] = 0.2
-        - Pr[P(a, b)] = 0.8
-        - Pr[Q(a)] = 1.0
+        - Pr[Q(a)] = 0.9
+        - Pr[Q(c)] = 0.1
 
     """
     pchoice_as_sets = {P: {(0.2, "a", "a"), (0.7, "a", "b"), (0.1, "c", "c")}}
@@ -347,7 +353,8 @@ def test_simple_existential(solver):
             pred_symb, pchoice_as_set
         )
     cpl_program.walk(code)
-    exp, result = testing.inspect_resolution(Q(x), cpl_program)
+    query = Implication(ans(x), Q(x))
+    result = solver.solve_succ_query(query, cpl_program)
     expected = testing.make_prov_set([(0.9, "a"), (0.1, "c")], ("_p_", "x"))
     assert testing.eq_prov_relations(result, expected)
 
@@ -364,7 +371,8 @@ def test_existential_in_conjunction(solver):
             pred_symb, pchoice_as_set
         )
     cpl_program.walk(code)
-    exp, result = testing.inspect_resolution(Q(x), cpl_program)
+    query = Implication(ans(x), Q(x))
+    result = solver.solve_succ_query(query, cpl_program)
     expected = testing.make_prov_set([(0.1, "a"), (0.2, "b")], ("_p_", "x"))
     assert testing.eq_prov_relations(result, expected)
 
@@ -501,6 +509,8 @@ def test_repeated_antecedent_predicate_symbol(solver):
 
     if solver is dichotomy_theorem_based_solver:
         context = pytest.raises(NotEasilyShatterableError)
+    elif solver is dalvi_suciu_lift:
+        context = pytest.raises(NonLiftableException)
     else:
         context = nullcontext()
 
@@ -518,7 +528,7 @@ def test_repeated_antecedent_predicate_symbol(solver):
         assert testing.eq_prov_relations(result, expected)
 
 
-def test_fake_neurosynth(solver):
+def test_tiny_cbma_example(solver):
     TermInStudy = Symbol("TermInStudy")
     ActivationReported = Symbol("ActivationReported")
     SelectedStudy = Symbol("SelectedStudy")
