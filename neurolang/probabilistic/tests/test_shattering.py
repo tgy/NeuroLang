@@ -1,7 +1,8 @@
-from neurolang.probabilistic.exceptions import NotEasilyShatterableError
 import operator
 
 import pytest
+
+from neurolang.probabilistic.exceptions import NotEasilyShatterableError
 
 from ...datalog.expression_processing import UnifyVariableEqualitiesMixin
 from ...exceptions import UnexpectedExpressionError
@@ -253,4 +254,84 @@ def test_shattering_between_symbol_equalities():
     assert any(
         formula.functor == EQ and formula.args == (y, z)
         for formula in shattered.antecedent.formulas
+    )
+
+
+def test_shattering_atom_with_constant():
+    cpl = CPLogicProgramWithVarEqUnification()
+    cpl.add_probabilistic_facts_from_tuples(
+        P,
+        [
+            (0.6, "a", "b"),
+            (0.2, "a", "a"),
+            (0.9, "b", "b"),
+        ],
+    )
+    query = Implication(ans(x), P(a, x))
+    symbol_table = generate_probabilistic_symbol_table_for_query(cpl, query)
+    shattered = shatter_easy_probfacts(query, symbol_table)
+    assert isinstance(shattered, Implication)
+    assert isinstance(
+        shattered.antecedent.functor,
+        ProbabilisticFactSet,
+    )
+    assert shattered.antecedent.args == (x,)
+    assert shattered.antecedent.functor.relation.is_fresh
+    functor = shattered.antecedent.functor.relation
+    assert symbol_table[functor].value.arity == 2
+
+
+def test_shattering_cbma_example():
+    TermAssociation = Symbol("TermAssociation")
+    SelectedStudy = Symbol("SelectedStudy")
+    VoxelReported = Symbol("VoxelReported")
+    s = Symbol("s")
+    cpl = CPLogicProgramWithVarEqUnification()
+    cpl.add_probabilistic_choice_from_tuples(
+        SelectedStudy,
+        [
+            (1 / 5, "s1"),
+            (1 / 5, "s2"),
+            (1 / 5, "s3"),
+            (1 / 5, "s4"),
+            (1 / 5, "s5"),
+        ],
+    )
+    cpl.add_extensional_predicate_from_tuples(
+        TermAssociation,
+        [
+            ("amygdala", "s1"),
+            ("amygdala", "s3"),
+            ("memory", "s1"),
+            ("memory", "s2"),
+            ("memory", "s5"),
+        ],
+    )
+    cpl.add_extensional_predicate_from_tuples(
+        VoxelReported,
+        [
+            (0, 0, 0, "s1"),
+            (0, 0, 0, "s2"),
+            (0, 0, 0, "s3"),
+            (0, 0, 0, "s4"),
+            (0, 0, 0, "s5"),
+        ],
+    )
+    csqt_pred_symb = Symbol.fresh()
+    query = Implication(
+        csqt_pred_symb(x, y, z),
+        Conjunction(
+            (
+                TermAssociation(Constant("amygdala"), s),
+                SelectedStudy(s),
+                VoxelReported(x, y, z, s),
+            )
+        ),
+    )
+    symbol_table = generate_probabilistic_symbol_table_for_query(cpl, query)
+    shattered = shatter_easy_probfacts(query, symbol_table)
+    assert isinstance(shattered.antecedent, Conjunction)
+    assert all(
+        not any(isinstance(arg, Constant) for arg in atom.args)
+        for atom in shattered.antecedent.formulas
     )

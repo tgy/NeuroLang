@@ -728,7 +728,7 @@ def symbolic_shattering(unified_query, symbol_table):
     inverted_symbol_table = {v: k for k, v in symbol_table.items()}
     for atom in extract_logic_atoms(shattered_query):
         functor = atom.functor
-        if isinstance(functor, ProbabilisticFactSet):
+        if isinstance(functor, (DeterministicFactSet, ProbabilisticFactSet)):
             if functor not in inverted_symbol_table:
                 s = Symbol.fresh()
                 inverted_symbol_table[functor] = s

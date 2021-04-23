@@ -11,7 +11,7 @@ from ..expression_pattern_matching import add_match
 from ..expression_walker import ExpressionWalker, ReplaceExpressionWalker
 from ..expressions import Constant, FunctionApplication, Symbol
 from .exceptions import NotEasilyShatterableError
-from .probabilistic_ra_utils import ProbabilisticFactSet
+from .probabilistic_ra_utils import DeterministicFactSet, ProbabilisticFactSet
 
 EQ = Constant(operator.eq)
 
@@ -83,6 +83,14 @@ class QueryEasyShatteringTagger(ExpressionWalker):
         self._cached_args = collections.defaultdict(set)
 
     @add_match(
+        FunctionApplication(DeterministicFactSet, ...),
+        lambda fa: not isinstance(fa, Shatter)
+        and any(isinstance(arg, Constant) for arg in fa.args),
+    )
+    def shatter_deterministic_predicate(self, function_application):
+        return Shatter(*function_application.unapply())
+
+    @add_match(
         FunctionApplication(ProbabilisticFactSet, ...),
         lambda fa: not isinstance(fa, Shatter)
         and any(isinstance(arg, Constant) for arg in fa.args),
@@ -121,6 +129,34 @@ class EasyQueryShatterer(ExpressionWalker):
     def __init__(self, symbol_table, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.symbol_table = symbol_table
+
+    @add_match(Shatter(DeterministicFactSet, ...))
+    def easy_shatter_deterministic_relation(self, shatter):
+        const_idxs = list(
+            i
+            for i, arg in enumerate(shatter.args)
+            if isinstance(arg, Constant)
+        )
+        new_relation = self.symbol_table[shatter.functor.relation].value
+        new_relation = new_relation.selection(
+            {
+                new_relation.columns[i]: shatter.args[i].value
+                for i in const_idxs
+            }
+        )
+        proj_cols = tuple(
+            col
+            for i, col in enumerate(new_relation.columns)
+            if i not in const_idxs
+        )
+        new_relation = new_relation.projection(*proj_cols)
+        new_pred_symb = Symbol.fresh()
+        self.symbol_table[new_pred_symb] = Constant[AbstractSet](new_relation)
+        non_const_args = tuple(
+            arg for arg in shatter.args if not isinstance(arg, Constant)
+        )
+        new_tagged = DeterministicFactSet(new_pred_symb)
+        return FunctionApplication(new_tagged, non_const_args)
 
     @add_match(Shatter(ProbabilisticFactSet, ...))
     def easy_shatter_probfact(self, shatter):
