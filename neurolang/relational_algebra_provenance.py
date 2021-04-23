@@ -728,7 +728,7 @@ class RelationalAlgebraProvenanceExpressionSemringSolver(
 
     @add_match(IndependentProjection(ProvenanceAlgebraSet, ...))
     def independent_projection(self, projection):
-        agg_fun = self._semiring_agg_sum
+        agg_fun = self._semiring_agg_noisy_or
         return self._rap_projection(projection, agg_fun)
 
     @add_match(Projection(ProvenanceAlgebraSet, ...))
@@ -781,7 +781,7 @@ class RelationalAlgebraProvenanceExpressionSemringSolver(
                 NOISY_OR, args, validate_arguments=False, verify_type=False
             )
         else:
-            r = 1 - functools.reduce(lambda x, y: (1 - x) * (1 - y), args)
+            r = 1 - functools.reduce(lambda x, y: x * (1 - y), args, 1)
         return r
 
     @add_match(RenameColumn(ProvenanceAlgebraSet, ..., ...))
